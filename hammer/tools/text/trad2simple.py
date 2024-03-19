@@ -7,7 +7,7 @@
 
 # -------------------------------------------------------Libraries----------------------------------------------------------
 # Standard library
-import argparse
+import os
 
 # Third-party libraries
 
@@ -19,14 +19,27 @@ import argparse
 
 
 # -----------------------------------------------------------Main-----------------------------------------------------------
-def parse_args() -> argparse.Namespace:
-    """set up argument parser.
+def Trad2Simple(object):
 
-    Returns:
-        argparse.Namespace: namespace for argument parser.
-    """
-    parser = argparse.ArgumentParser('arguments for hammer.')
+    def __init__(self, config, logger):
+        self.trad2simple = {}
 
-    parser.add_argument('--config_name', help='name of the config file.')
-
-    return parser.parse_args()
+    def process(self, text, offset=0):
+        result = ''
+        trace = {}
+        for index, character in enumerate(text):
+            if character in self.trad2simple:
+                target = self.trad2simple.get(character)
+                if self.config.save_trace:
+                    trace.append({
+                        'start': index + offset,
+                        'end': index+ offset + 1,
+                        'text': character,
+                        'target': target
+                    })
+            else:
+                target = character
+            result += character
+        return result, trace
+    
+    def 

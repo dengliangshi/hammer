@@ -1,8 +1,8 @@
 #encoding=utf-8
 
 # --------------------------------------------------------------------------------------------------------------------------
-# Copyright (c) 2023
-# Auther: Dengliang Shi
+# Copyright (c) 2024
+# Author: Dengliang Shi
 # --------------------------------------------------------------------------------------------------------------------------
 
 # -------------------------------------------------------Libraries----------------------------------------------------------
@@ -17,7 +17,7 @@ from torchmetrics.functional.classification import accuracy
 
 # User define module
 from hammer.utils.config import Config
-from hammer.algorithms.models.modeling import Modeling
+from hammer.algorithms.models.model import Modeling
 from hammer.algorithms.models.backbone import Backbone
 
 # ------------------------------------------------------Global Variables----------------------------------------------------
