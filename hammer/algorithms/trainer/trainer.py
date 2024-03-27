@@ -42,5 +42,20 @@ class Trainer(object):
             distributed.init_process_group(
                 
             )
+
+
+
+    def train(self, ):
+
+        torch.utils.data.DataLoader(
+            dataset=dataset,
+            batch_size=self.train.batch_size,
+            shuffle=True,
+            sampler=None,
+            num_workers=2,
+            collate_fn=None,
+            pin_memory=True,
+            drop_last=False
+        )
         
 
