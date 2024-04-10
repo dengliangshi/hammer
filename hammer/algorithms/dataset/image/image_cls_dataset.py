@@ -7,157 +7,153 @@
 
 # -------------------------------------------------------Libraries----------------------------------------------------------
 # Standard library
-
+import os
+import json
+from logging import Logger
 
 # Third-party libraries
-import torch
 from PIL import Image
+from torch.utils.data import Dataset
+from torch.utils.data import IterableDataset
 
 # User define module
-
+from hammer.utils.config import Config
 
 # ------------------------------------------------------Global Variables----------------------------------------------------
 _ERROR_RETRY = 50
 
 # -----------------------------------------------------------Main-----------------------------------------------------------
-class ImageClsDataset(torch.utils.data.Dataset):
+class ImageClsDataset(Dataset):
 
-    def __init__(
-            self,
-            root,
-            split='train',
-            class_map=None,
-            load_bytes=False,
-            input_img_mode='RGB',
-            transform=None,
-            target_transform=None,
-            config=None,
-            logger=None
+    def __init__(self,
+        data_dir: str,
+        split: str='train',
+        input_img_mode: str='RGB',
+        config: Config=None,
+        logger: Logger=None
     ):
-        if reader is None or isinstance(reader, str):
-            reader = create_reader(
-                reader or '',
-                root=root,
-                split=split,
-                class_map=class_map
-            )
-        self.reader = reader
-        self.load_bytes = load_bytes
+        """_summary_
+
+        Args:
+            data_dir (str): the dir of dataset.
+            split (str, optional): _description_. Defaults to 'train'.
+            input_img_mode (str, optional): _description_. Defaults to 'RGB'.
+            config (Config, optional): _description_. Defaults to None.
+            logger (Logger, optional): _description_. Defaults to None.
+        """
+        self.config = config
+        self.logger = logger
+        self._consecutive_errors = 0
         self.input_img_mode = input_img_mode
-        self.transform = transform
-        self.target_transform = target_transform
-        self._consecutive_errors = 0
 
-    def __getitem__(self, index):
-        img, target = self.reader[index]
+        assert os.path.isdir(data_dir), f'{data_dir} is not a directory'
+        # load in samples from given file
+        file_path = os.path.join(data_dir, f'{split}.json')
+        self.samples = self._load_data(file_path)
+        self.num_samples = len(self.samples)
+        # mappings from category to index
+        file_path = os.path.join(data_dir, 'mappings.json')
+        self.category2idx = json.load(open(file_path, 'r'))
 
+    def __getitem__(self, index: int):
+        """_summary_
+
+        Args:
+            index (int): get sample 
+
+        Raises:
+            error: _description_
+
+        Returns:
+            (, int): _description_
+        """
+        sample = self.samples[index]
+        # try to open the image file and convert it to the specified mode
         try:
-            img = img.read() if self.load_bytes else Image.open(img)
-        except Exception as e:
-            _logger.warning(f'Skipped sample (index {index}, file {self.reader.filename(index)}). {str(e)}')
+            image = Image.open(sample['file_path'])
+            if self.input_img_mode:
+                image = image.convert(self.input_img_mode)
+            # check if a transformation is specified and apply it if necessary
+            if self.transform is not None:
+                image = self.transform(image)
+            # get the target label from the mappings from category to index
+            target = self.category2idx[sample['category']]
+        except Exception as error:
+            # log a warning if an error occurs
+            self.logger.warning(f'skipped sample (index {index}, file {sample["file_path"]}). {str(error)}')
+            # increment the consecutive errors counter
             self._consecutive_errors += 1
+            # if the error counter is below the specified threshold, try to get the next sample
             if self._consecutive_errors < _ERROR_RETRY:
-                return self.__getitem__((index + 1) % len(self.reader))
+                return self.__getitem__((index + 1) % self.num_samples)
+            # if the error counter is equal or above the threshold, raise the error
             else:
-                raise e
+                raise error
+        # reset the consecutive errors counter
         self._consecutive_errors = 0
 
-        if self.input_img_mode and not self.load_bytes:
-            img = img.convert(self.input_img_mode)
-        if self.transform is not None:
-            img = self.transform(img)
-
-        if target is None:
-            target = -1
-        elif self.target_transform is not None:
-            target = self.target_transform(target)
-
-        return img, target
+        return image, target
 
     def __len__(self):
-        return len(self.reader)
-
-    def filename(self, index, basename=False, absolute=False):
-        return self.reader.filename(index, basename, absolute)
-
-    def filenames(self, basename=False, absolute=False):
-        return self.reader.filenames(basename, absolute)
+        return len(self.samples)
 
 
-class IterableImageClsDataset(torch.utils.data.IterableDataset):
+class IterableImageClsDataset(IterableDataset):
 
-    def __init__(
-            self,
-            root,
-            reader=None,
-            split='train',
-            class_map=None,
-            is_training=False,
-            batch_size=1,
-            num_samples=None,
-            seed=42,
-            repeats=0,
-            download=False,
-            input_img_mode='RGB',
-            input_key=None,
-            target_key=None,
-            transform=None,
-            target_transform=None,
-            max_steps=None,
+    def __init__(self,
+        data_dir: str,
+        split: str='train',
+        input_img_mode: str='RGB',
+        config: Config=None,
+        logger: Logger=None
     ):
-        assert reader is not None
-        if isinstance(reader, str):
-            self.reader = create_reader(
-                reader,
-                root=root,
-                split=split,
-                class_map=class_map,
-                is_training=is_training,
-                batch_size=batch_size,
-                num_samples=num_samples,
-                seed=seed,
-                repeats=repeats,
-                download=download,
-                input_img_mode=input_img_mode,
-                input_key=input_key,
-                target_key=target_key,
-                max_steps=max_steps,
-            )
-        else:
-            self.reader = reader
-        self.transform = transform
-        self.target_transform = target_transform
+        """Create iterable image classification dataset.
+
+        Args:
+            data_dir (str): the directory of dataset.
+            split (str, optional): _description_. Defaults to 'train'.
+            input_img_mode (str, optional): _description_. Defaults to 'RGB'.
+            config (Config, optional): _description_. Defaults to None.
+            logger (Logger, optional): _description_. Defaults to None.
+        """
+        self.config = config
+        self.logger = logger
         self._consecutive_errors = 0
+        self.input_img_mode = input_img_mode
+
+        assert os.path.isdir(data_dir), f'{data_dir} is not a directory'
+        # load in samples from given file
+        file_path = os.path.join(data_dir, f'{split}.json')
+        self.samples = self._load_data(file_path)
+        self.num_samples = len(self.samples)
+        # mappings from category to index
+        file_path = os.path.join(data_dir, 'mappings.json')
+        self.category2idx = json.load(open(file_path, 'r'))
+
+    def _load_data(self, file_path: str) -> list:
+        """This function reads a file line by line and loads the data into a list.
+
+        Args:
+            file_path (str): the path of the file to be read.
+
+        Returns:
+            list: a list containing the data loaded from the file.
+        """
+        with open(file_path, 'r', encoding='utf-8') as input_file:
+            return [json.loads(line.strip()) for line in input_file]
 
     def __iter__(self):
-        for img, target in self.reader:
+        for sample in self.samples:
             if self.transform is not None:
                 img = self.transform(img)
             if self.target_transform is not None:
                 target = self.target_transform(target)
             yield img, target
 
-    def __len__(self):
-        if hasattr(self.reader, '__len__'):
-            return len(self.reader)
-        else:
-            return 0
+    def __len__(self) -> int:
+        """Get the number of samples.
 
-    def set_epoch(self, count):
-        # TFDS and WDS need external epoch count for deterministic cross process shuffle
-        if hasattr(self.reader, 'set_epoch'):
-            self.reader.set_epoch(count)
-
-    def set_loader_cfg(
-            self,
-            num_workers: Optional[int] = None,
-    ):
-        # TFDS and WDS readers need # workers for correct # samples estimate before loader processes created
-        if hasattr(self.reader, 'set_loader_cfg'):
-            self.reader.set_loader_cfg(num_workers=num_workers)
-
-    def filename(self, index, basename=False, absolute=False):
-        assert False, 'Filename lookup by index not supported, use filenames().'
-
-    def filenames(self, basename=False, absolute=False):
-        return self.reader.filenames(basename, absolute)
+        Returns:
+            int: the number of samples.
+        """
+        return self.num_samples
