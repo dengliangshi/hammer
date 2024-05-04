@@ -19,7 +19,7 @@ from hammer.utils.config import Config
 
 
 # -----------------------------------------------------------Main-----------------------------------------------------------
-class Dataset(object):
+class DatasetFactory(object):
     
     def __init__(self, dataset_cls: Dataset, config: Config, logger: Logger):
         """Create dataset .
