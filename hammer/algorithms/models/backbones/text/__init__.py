@@ -10,17 +10,13 @@
 
 
 # Third-party libraries
-import torch
+
 
 # User define module
-
+from hammer.algorithms.models.backbones.text.textcnn import TextCNN
 
 # ------------------------------------------------------Global Variables----------------------------------------------------
 
 
 # -----------------------------------------------------------Main-----------------------------------------------------------
-class TextClsDataset(torch.utils.data.Dataset):
-
-    def __init__(self, config, logger):
-        
-        super(TextClsDataset, self).__init__()
+__all__ = ['TextCNN', ]
