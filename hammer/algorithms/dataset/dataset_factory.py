@@ -7,12 +7,14 @@
 
 # -------------------------------------------------------Libraries----------------------------------------------------------
 # Standard library
+import os
 from logging import Logger
 
 # Third-party libraries
 from torch.utils.data import Dataset
 
 # User define module
+from hammer.tools.flow import Flow
 from hammer.utils.config import Config
 
 # ------------------------------------------------------Global Variables----------------------------------------------------
@@ -21,7 +23,7 @@ from hammer.utils.config import Config
 # -----------------------------------------------------------Main-----------------------------------------------------------
 class DatasetFactory(object):
     
-    def __init__(self, dataset_cls: Dataset, config: Config, logger: Logger):
+    def __init__(self, dataset_cls: Dataset, flow: Flow, config: Config, logger: Logger):
         """Create dataset .
 
         Args:
@@ -34,8 +36,8 @@ class DatasetFactory(object):
         # create train dataset
         if config.train.enabled:
             self.train_dataset = dataset_cls(
-                data_dir=config.dataset.data_dir,
-                split='train',
+                file_path=os.path.join(config.dataset.data_dir, 'train.json'),
+                flow=flow,
                 config=config
             )
         else:
@@ -43,8 +45,8 @@ class DatasetFactory(object):
         # create valid dataset
         if config.valid.enabled:
             self.valid_dataset = dataset_cls(
-                data_dir=config.dataset.data_dir,
-                split='valid',
+                file_path=os.path.join(config.dataset.data_dir, 'valid.json'),
+                flow=flow,
                 config=config
             )
         else:
@@ -52,8 +54,8 @@ class DatasetFactory(object):
         # create test dataset
         if config.test.enabled:
             self.test_dataset = dataset_cls(
-                data_dir=config.dataset.data_dir,
-                split='test',
+                file_path=os.path.join(config.dataset.data_dir, 'test.json'),
+                flow=flow,
                 config=config
             )
         else:

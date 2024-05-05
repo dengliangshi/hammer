@@ -50,4 +50,8 @@ class Config(BaseConfig):
         # learning rate for training
         self.train.learning_rate = 1e-3
 
+
+        self.evaluate = AttrDict()
+        self.evaluate.enable = True
+
         super(Config, self).__init__(config_file)

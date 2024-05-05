@@ -171,11 +171,11 @@ class Trainer(object):
                 self.evaluate_and_print_results('valid', model, valid_dataloader)
             iteration += 1
 
-    def evaluate(self, model: torch.Module, data_loader: torch.utils.data.DataLoader) -> dict:
+    def evaluate(self, model: torch.nn.Module, data_loader: torch.utils.data.DataLoader) -> dict:
         """This method evaluates the model by running it on the given data loader.
 
         Args:
-            model (torch.Module): the model to be evaluated.
+            model (torch.nn.Module): the model to be evaluated.
             data_loader (torch.utils.data.DataLoader): the data loader for the evaluation data.
 
         Returns:

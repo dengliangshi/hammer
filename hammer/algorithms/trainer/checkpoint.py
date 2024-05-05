@@ -60,12 +60,12 @@ def get_checkpoint_name(checkpoint_path: str, iteration: int):
         mpu.get_pipeline_model_parallel_rank()), 'model.pt')
 
 
-def save_ds_checkpoint(iteration: int, model: torch.Module, lr_scheduler: LRScheduler, config: Config):
+def save_ds_checkpoint(iteration: int, model: torch.nn.Module, lr_scheduler: LRScheduler, config: Config):
     """Save checkpoint with DeepSpeed.
 
     Args:
         iteration (int): iteration number of the current training process.
-        model (torch.Module): the instance of model to save.
+        model (torch.nn.Module): the instance of model to save.
         lr_scheduler (LRScheduler): learning rate scheduler.
         config (Config): user defined configuration.
     """
@@ -85,12 +85,12 @@ def save_ds_checkpoint(iteration: int, model: torch.Module, lr_scheduler: LRSche
     model.save_checkpoint(config.train.checkpoint_path, iteration, client_state=state_dict)
 
 
-def save_checkpoint(iteration: int, model: torch.Module, optimizer: Optimizer, lr_scheduler: LRScheduler, config: Config):
+def save_checkpoint(iteration: int, model: torch.nn.Module, optimizer: Optimizer, lr_scheduler: LRScheduler, config: Config):
     """Save a model checkpoint.
 
     Args:
         iteration (int): iteration number of the current training process.
-        model (torch.Module): the instance of model to save.
+        model (torch.nn.Module): the instance of model to save.
         lr_scheduler (LRScheduler): learning rate scheduler.
         config (Config): user defined configuration.
     """

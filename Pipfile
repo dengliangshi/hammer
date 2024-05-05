@@ -6,6 +6,8 @@ name = "pip_conf_index_global"
 [packages]
 torch = "*"
 deepspeed = "*"
+tensorboard = "*"
+torchmetrics = "*"
 
 [dev-packages]
 

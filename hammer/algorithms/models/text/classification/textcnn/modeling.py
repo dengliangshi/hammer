@@ -57,14 +57,14 @@ class TextCNNForCalssification(torch.nn.Module):
 
 class TextCNNFactory(ModelFactory):
 
-    def __init__(self, model_name: str, config: Config, logger: Logger):
+    def __init__(self, config: Config, logger: Logger):
         """Initialize model factory.
 
         Args:
             config (Config): configuration for model.
             logger (Logger): instance of logger.
         """
-        super(TextCNNFactory, self).__init__(model_name, config, logger)
+        super(TextCNNFactory, self).__init__(config, logger)
 
     def build_model(self) -> torch.nn.Module:
         """Build model.
