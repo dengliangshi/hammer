@@ -40,7 +40,7 @@ class TextClsDataset(torch.utils.data.Dataset):
             for line in input_file:
                 sample = json.loads(line.strip())
                 samples.append(sample)
-        return samples
+        return samples, len(samples)
 
     def __len__(self):
         return len(self.samples)

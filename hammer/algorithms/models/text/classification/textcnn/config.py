@@ -31,6 +31,7 @@ class Config(BaseConfig):
         self.model_name = 'TextCNN'
         
         self.dataset = AttrDict()
+        self.dataset.data_path = '/home/dengliang/benchmarks/tnews'
         self.dataset.vocab_size = 2
         self.dataset.num_classes = 2
 
@@ -51,7 +52,10 @@ class Config(BaseConfig):
         self.train.learning_rate = 1e-3
 
 
-        self.evaluate = AttrDict()
-        self.evaluate.enable = True
+        self.valid = AttrDict()
+        self.valid.enabled = True
+
+        self.test = AttrDict()
+        self.test.enabled = True
 
         super(Config, self).__init__(config_file)

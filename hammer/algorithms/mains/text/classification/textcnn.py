@@ -51,11 +51,11 @@ def main(args):
     # build model
     model_factory = TextCNNFactory(config, logger)
 
-    if config.train.enable:
+    if config.train.enabled:
         trainer = Trainer(model_factory, dataset_factory, config, logger)
         trainer.train()
 
-    if config.evaluate.enable:
+    if config.valid.enabled:
         pass
 
 

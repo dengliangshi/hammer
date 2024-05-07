@@ -45,7 +45,7 @@ class DatasetFactory(object):
         # create valid dataset
         if config.valid.enabled:
             self.valid_dataset = dataset_cls(
-                file_path=os.path.join(config.dataset.data_dir, 'valid.json'),
+                file_path=os.path.join(config.dataset.data_path, 'valid.json'),
                 flow=flow,
                 config=config
             )
@@ -54,7 +54,7 @@ class DatasetFactory(object):
         # create test dataset
         if config.test.enabled:
             self.test_dataset = dataset_cls(
-                file_path=os.path.join(config.dataset.data_dir, 'test.json'),
+                file_path=os.path.join(config.dataset.data_path, 'test.json'),
                 flow=flow,
                 config=config
             )
