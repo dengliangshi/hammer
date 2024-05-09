@@ -22,12 +22,11 @@ from hammer.utils.config import Config
 # -----------------------------------------------------------Main-----------------------------------------------------------
 class GCN(torch.nn.Module):
 
-    def __init__(self, input_dim: int, config: Config, logger: Logger):
-        """initialize TextCNN.
+    def __init__(self, input_dim: int, config: Config):
+        """initialize GCN.
 
         Args:
             config (Config): configuration for backbone.
-            logger (Logger): instance of logger.
         """
         self.weights = []
         # weights for grach convolutional layers
@@ -75,7 +74,7 @@ class GCN(torch.nn.Module):
         """
         query = key = value = nodes
         # calculate the attention score
-        logits = torch.matmul(query, key.transpose(-2, -1)) / np.sqrt(query.size(-1))
+        logits = torch.matmul(query, key.transpose(-2, -1)) / torch.sqrt(query.size(-1))
         # normalize the attention score
         attention_score = torch.nn.functional.softmax(logits, dim=-1)
         # calculate the weighted sum of the input nodes
@@ -93,8 +92,8 @@ class GCN(torch.nn.Module):
             dict: outputs of backbone.
         """
         outputs = {}
-        
-        hidden = inputs['input_embeddings']
+
+        hidden = inputs['features']
         # normalize adjacency matrix
         adj_matrix = self._norm_adj_matrix(inputs['adj_matrix'])
         for weight in self.weights:
@@ -102,7 +101,11 @@ class GCN(torch.nn.Module):
             hidden = torch.matmul( weight)
             # convolutional operation on input embeddings
             hidden = torch.matmul(adj_matrix, hidden)
-        #
+        # layer normalization if enabled
+        if self.layer_norm is not None:
+            hidden = self.layer_norm(hidden)
+        # apply dropout
+        hidden = self.dropout(hidden)
         outputs['output'] = self.dropout(hidden)
 
         return outputs

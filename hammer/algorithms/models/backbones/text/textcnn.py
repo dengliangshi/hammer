@@ -22,12 +22,11 @@ from hammer.utils.config import Config
 # -----------------------------------------------------------Main-----------------------------------------------------------
 class TextCNN(torch.nn.Module):
 
-    def __init__(self, config: Config, logger: Logger):
+    def __init__(self, config: Config):
         """initialize TextCNN.
 
         Args:
             config (Config): configuration for backbone.
-            logger (Logger): instance of logger.
         """
         super(TextCNN, self).__init__()
 
